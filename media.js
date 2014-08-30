@@ -23,34 +23,6 @@ var progressFlag = 1;
 var mediaCurrentTime = 0;
 var session = null;
 var autoJoinPolicy = 'tab_and_origin_scoped';
-var media = [
-    {'url':'http://commondatastorage.googleapis.com/gtv-videos-bucket/big_buck_bunny_1080p.mp4',
-     'title':'Big Buck Bunny',
-     'thumb':'images/bunny.jpg',
-     'metadataType':chrome.cast.media.MetadataType.GENERIC,
-    },
-    {'url':'http://commondatastorage.googleapis.com/gtv-videos-bucket/ED_1280.mp4',
-     'title':'Elephant Dream',
-     'thumb':'images/ed.jpg',
-     'metadataType':chrome.cast.media.MetadataType.TV_SHOW,
-    },
-    {'url':'http://commondatastorage.googleapis.com/gtv-videos-bucket/tears_of_steel_1080p.mov',
-     'title':'Tears of Steel',
-     'thumb':'images/Tears.jpg',
-     'metadataType':chrome.cast.media.MetadataType.MOVIE,
-    },
-    {'url':'http://commondatastorage.googleapis.com/gtv-videos-bucket/Google%20IO%202011%2045%20Min%20Walk%20Out.mp3',
-     'title':'Google I/O 2011 Audio',
-     'thumb':'images/google-io-2011.jpg',
-     'metadataType':chrome.cast.media.MetadataType.MUSIC_TRACK,
-    },
-    {'url':'http://www.videws.com/eureka/castv2/images/San_Francisco_Fog.jpg',
-     'title':'San Francisco Fog',
-     'thumb':'images/San_Francisco_Fog.jpg',
-     'metadataType':chrome.cast.media.MetadataType.PHOTO,
-    },
-];
-
 
 /**
  * Call initialization
@@ -170,6 +142,7 @@ function receiverListener(e) {
   if( e === 'available' ) {
     console.log("receiver found");
     appendMessage("receiver found");
+	launchApp();
   }
   else {
     console.log("receiver list empty");
@@ -210,85 +183,38 @@ function onLaunchError() {
  */
 function stopApp() {
   session.stop(onStopAppSuccess, onError);
+  clearInterval(interval_id);
 }
 
 /**
  * load media
  * @param {string} i An index for media
  */
-function loadMedia(currentMediaIndex) {
+function loadMedia(url) {
   if (!session) {
     console.log("no session");
     appendMessage("no session");
     return;
   }
 
-  console.log("loading..." + media[currentMediaIndex]['url']);
-  appendMessage("loading..." + media[currentMediaIndex]['url']);
+  console.log("loading..." + url);
+  appendMessage("loading..." + url);
   
-  var mediaInfo = new chrome.cast.media.MediaInfo(media[currentMediaIndex]['url'], 'video/mp4');
+  var mediaInfo = new chrome.cast.media.MediaInfo(url, 'video/mp4');
 
-  switch(currentMediaIndex) {
-    case chrome.cast.media.MetadataType.GENERIC:
-      mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
-      mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.GENERIC;
-      mediaInfo.metadata.subtitle = 'By Blender Foundation';
-      mediaInfo.metadata.releaseDate = '2000';
-      mediaInfo.contentType = 'video/mp4';
-      document.getElementById("media_control").style.display = 'block';
-      break;
-    case chrome.cast.media.MetadataType.TV_SHOW:
-      mediaInfo.metadata = new chrome.cast.media.TvShowMediaMetadata();
-      mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.TV_SHOW;
-      mediaInfo.metadata.seriesTitle = 'seriesTitle';
-      mediaInfo.metadata.subtitle = 'Elephant Dream';
-      mediaInfo.metadata.season = 5;
-      mediaInfo.metadata.episode = 23;
-      mediaInfo.metadata.originalAirDate = '2011';
-      mediaInfo.contentType = 'video/mov';
-      document.getElementById("media_control").style.display = 'block';
-      break;
-    case chrome.cast.media.MetadataType.MOVIE:
-      mediaInfo.metadata = new chrome.cast.media.MovieMediaMetadata();
-      mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.MOVIE;
-      mediaInfo.metadata.subtitle = 'steel steel steel';
-      mediaInfo.metadata.studio = 'By Blender Foundation';
-      mediaInfo.metadata.releaseDate = '2006';
-      mediaInfo.contentType = 'video/mp4';
-      document.getElementById("media_control").style.display = 'block';
-      break;
-    case chrome.cast.media.MetadataType.MUSIC_TRACK:
-      mediaInfo.metadata = new chrome.cast.media.MusicTrackMediaMetadata();
-      mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.MUSIC_TRACK;
-      mediaInfo.metadata.albumName = 'Album name';
-      mediaInfo.metadata.albumArtist = 'Album artist';
-      mediaInfo.metadata.artist = 'Music artist';
-      mediaInfo.metadata.composer = 'Composer';
-      mediaInfo.metadata.trackNumber = 13;
-      mediaInfo.metadata.discNumber = 2;
-      mediaInfo.metadata.releaseDate = '2011';
-      mediaInfo.contentType = 'audio/mp3';
-      document.getElementById("media_control").style.display = 'block';
-      break;
-    case chrome.cast.media.MetadataType.PHOTO:
-      mediaInfo.metadata = new chrome.cast.media.PhotoMediaMetadata();
-      mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.PHOTO;
-      mediaInfo.metadata.artist = 'Photo artist';
-      mediaInfo.metadata.location = 'San Francisco';
-      mediaInfo.metadata.longitude = 37.7833;
-      mediaInfo.metadata.latitude = 122.4167;
-      mediaInfo.metadata.width = 1728;
-      mediaInfo.metadata.height = 1152;
-      mediaInfo.metadata.creationDateTime = '1999';
-      mediaInfo.contentType = 'image/jpg';
-      document.getElementById("media_control").style.display = 'none';
-      break;
-    default:
-      break;
-  }
+  mediaInfo.metadata = new chrome.cast.media.PhotoMediaMetadata();
+  mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.PHOTO;
+  mediaInfo.metadata.artist = 'Photo artist';
+  mediaInfo.metadata.location = 'San Francisco';
+  mediaInfo.metadata.longitude = 37.7833;
+  mediaInfo.metadata.latitude = 122.4167;
+  mediaInfo.metadata.width = 1728;
+  mediaInfo.metadata.height = 1152;
+  mediaInfo.metadata.creationDateTime = '1999';
+  mediaInfo.contentType = 'image/jpg';
 
-  mediaInfo.metadata.title = media[currentMediaIndex]['title'];
-  mediaInfo.metadata.images = [{'url': 'http://www.videws.com/eureka/castv2/' + media[currentMediaIndex]['thumb']}];
+  //mediaInfo.metadata.title = media[currentMediaIndex]['title'];
+  mediaInfo.metadata.images = [{'url': url}];
 
   var request = new chrome.cast.media.LoadRequest(mediaInfo);
   request.autoplay = true;
@@ -307,7 +233,6 @@ function onMediaDiscovered(how, mediaSession) {
   currentMediaSession = mediaSession;
   mediaSession.addUpdateListener(onMediaStatusUpdate);
   mediaCurrentTime = currentMediaSession.currentTime;
-  playpauseresume.innerHTML = 'Pause';
   document.getElementById("casticon").src = 'images/cast_icon_active.png'; 
 }
 
@@ -326,138 +251,10 @@ function onMediaError(e) {
  * @param {Object} e A non-null media object
  */
 function onMediaStatusUpdate(isAlive) {
-  if( progressFlag ) {
-    document.getElementById("progress").value = parseInt(100 * currentMediaSession.currentTime / currentMediaSession.media.duration);
-  }
-  document.getElementById("playerstate").innerHTML = currentMediaSession.playerState;
-}
-
-/**
- * play media
- */
-function playMedia() {
-  if( !currentMediaSession ) 
-    return;
-
-  var playpauseresume = document.getElementById("playpauseresume");
-  if( playpauseresume.innerHTML == 'Play' ) {
-    currentMediaSession.play(null,
-      mediaCommandSuccessCallback.bind(this,"playing started for " + currentMediaSession.sessionId),
-      onError);
-      playpauseresume.innerHTML = 'Pause';
-      //currentMediaSession.addListener(onMediaStatusUpdate);
-      appendMessage("play started");
-  }
-  else {
-    if( playpauseresume.innerHTML == 'Pause' ) {
-      currentMediaSession.pause(null,
-        mediaCommandSuccessCallback.bind(this,"paused " + currentMediaSession.sessionId),
-        onError);
-      playpauseresume.innerHTML = 'Resume';
-      appendMessage("paused");
-    }
-    else {
-      if( playpauseresume.innerHTML == 'Resume' ) {
-        currentMediaSession.play(null,
-          mediaCommandSuccessCallback.bind(this,"resumed " + currentMediaSession.sessionId),
-          onError);
-        playpauseresume.innerHTML = 'Pause';
-        appendMessage("resumed");
-      }
-    }
-  }
-}
-
-/**
- * stop media
- */
-function stopMedia() {
-  if( !currentMediaSession ) 
-    return;
-
-  currentMediaSession.stop(null,
-    mediaCommandSuccessCallback.bind(this,"stopped " + currentMediaSession.sessionId),
-    onError);
-  var playpauseresume = document.getElementById("playpauseresume");
-  playpauseresume.innerHTML = 'Play';
-  appendMessage("media stopped");
-}
-
-/**
- * set media volume
- * @param {Number} level A number for volume level
- * @param {Boolean} mute A true/false for mute/unmute 
- */
-function setMediaVolume(level, mute) {
-  if( !currentMediaSession ) 
-    return;
-
-  var volume = new chrome.cast.Volume();
-  volume.level = level;
-  currentVolume = volume.level;
-  volume.muted = mute;
-  var request = new chrome.cast.media.VolumeRequest();
-  request.volume = volume;
-  currentMediaSession.setVolume(request,
-    mediaCommandSuccessCallback.bind(this, 'media set-volume done'),
-    onError);
-}
-
-/**
- * set receiver volume
- * @param {Number} level A number for volume level
- * @param {Boolean} mute A true/false for mute/unmute
- */
-function setReceiverVolume(level, mute) {
-  if( !session )
-    return;
-
-  if( !mute ) {
-    session.setReceiverVolumeLevel(level,
-      mediaCommandSuccessCallback.bind(this, 'media set-volume done'),
-      onError);
-    currentVolume = level;
-  }
-  else {
-    session.setReceiverMuted(true,
-      mediaCommandSuccessCallback.bind(this, 'media set-volume done'),
-      onError);
-  }
-}
-
-/**
- * mute media
- * @param {DOM Object} cb A checkbox element
- */
-function muteMedia(cb) {
-  if( cb.checked == true ) {
-    document.getElementById('muteText').innerHTML = 'Unmute media';
-    //setMediaVolume(currentVolume, true);
-    setReceiverVolume(currentVolume, true);
-    appendMessage("media muted");
-  }
-  else {
-    document.getElementById('muteText').innerHTML = 'Mute media';
-    //setMediaVolume(currentVolume, false);
-    setReceiverVolume(currentVolume, false);
-    appendMessage("media unmuted");
-  }
-}
-
-
-/**
- * seek media position
- * @param {Number} pos A number to indicate percent
- */
-function seekMedia(pos) {
-  console.log('Seeking ' + currentMediaSession.sessionId + ':' +
-    currentMediaSession.mediaSessionId + ' to ' + pos + "%");
-  progressFlag = 0;
-  var request = new chrome.cast.media.SeekRequest();
-  request.currentTime = pos * currentMediaSession.media.duration / 100;
-  currentMediaSession.seek(request,
-    onSeekSuccess.bind(this, 'media seek done'),
-    onError);
+  //if( progressFlag ) {
+  //  document.getElementById("progress").value = parseInt(100 * currentMediaSession.currentTime / currentMediaSession.media.duration);
+  //}
+  //document.getElementById("playerstate").innerHTML = currentMediaSession.playerState;
 }
 
 /**
