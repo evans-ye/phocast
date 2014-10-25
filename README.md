@@ -1,5 +1,6 @@
 Configure httpd.conf:
 
+```
 ...
 Listen 5566
 ...
@@ -12,7 +13,10 @@ DocumentRoot "C:/media/"
     Order deny,allow
     Allow from all
 </Directory>
+```
 
 Configure index.html:
 
+```
 var photo_root = "../Pictures/";
+```
